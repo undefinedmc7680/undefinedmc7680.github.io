@@ -1,0 +1,390 @@
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startpage - マイホーム画面</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* カスタムスクールバー */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-300 relative overflow-x-hidden">
+
+    <!-- 背景装飾用のグラデーション球体 -->
+    <div id="bg-glow-1" class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none transition-all duration-1000"></div>
+    <div id="bg-glow-2" class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-500/10 blur-[120px] pointer-events-none transition-all duration-1000"></div>
+
+    <!-- ヘッダー（右上に設定/カスタマイズボタン） -->
+    <header class="w-full max-w-7xl mx-auto px-6 py-4 flex justify-between items-center z-10">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold tracking-wider bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">STARTPAGE</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <!-- テーマ切り替え -->
+            <button id="theme-toggle" class="p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800/80 transition-all text-slate-400 hover:text-white" title="テーマ変更">
+                <i data-lucide="sun" class="w-5 h-5 hidden" id="sun-icon"></i>
+                <i data-lucide="moon" class="w-5 h-5" id="moon-icon"></i>
+            </button>
+            <!-- 背景変更 -->
+            <button id="bg-toggle" class="p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800/80 transition-all text-slate-400 hover:text-white" title="背景を変更">
+                <i data-lucide="palette" class="w-5 h-5"></i>
+            </button>
+            <!-- 設定ボタン -->
+            <button id="settings-btn" class="p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800/80 transition-all text-slate-400 hover:text-white" title="設定">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="w-full max-w-5xl mx-auto px-6 py-8 flex-grow flex flex-col justify-center items-center z-10 gap-10">
+        
+        <!-- 時計 & 日付 & 天気 -->
+        <div class="text-center space-y-3">
+            <h1 id="clock" class="text-6xl md:text-8xl font-extrabold tracking-tight select-none bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
+                00:00:00
+            </h1>
+            <div class="flex justify-center items-center space-x-4 text-sm md:text-base text-slate-400 font-medium">
+                <span id="date">2026年5月21日 (木)</span>
+                <span class="text-slate-600">|</span>
+                <div class="flex items-center space-x-1" id="weather-widget">
+                    <i data-lucide="cloud-sun" class="w-4 h-4 text-amber-400"></i>
+                    <span id="weather-temp">24°C 東京</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 検索フォーム -->
+        <div class="w-full max-w-2xl">
+            <form id="search-form" class="relative flex items-center bg-slate-900/60 border border-slate-800/80 rounded-2xl p-1 shadow-2xl backdrop-blur-md focus-within:border-indigo-500/50 transition-all duration-300">
+                <!-- 検索エンジンセレクト -->
+                <div class="relative">
+                    <button type="button" id="engine-select-btn" class="flex items-center space-x-1 px-4 py-2 text-sm text-slate-300 hover:text-white bg-slate-800/40 rounded-xl transition-all">
+                        <span id="current-engine-name">Google</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <!-- 検索エンジン選択ドロップダウン -->
+                    <div id="engine-dropdown" class="hidden absolute left-0 mt-2 w-40 bg-slate-900 border border-slate-800 rounded-xl shadow-xl py-1 z-20">
+                        <button type="button" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2" onclick="setSearchEngine('google')">
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2" onclick="setSearchEngine('bing')">
+                            <span>Bing</span>
+                        </button>
+                        <button type="button" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2" onclick="setSearchEngine('duckduckgo')">
+                            <span>DuckDuckGo</span>
+                        </button>
+                        <button type="button" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white flex items-center space-x-2" onclick="setSearchEngine('yahoo')">
+                            <span>Yahoo!</span>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="text" id="search-input" placeholder="ウェブを検索、またはURLを入力..." class="w-full bg-transparent px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none text-base">
+                
+                <button type="submit" class="p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/20 mr-1" title="検索">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- ショートカットグリッド -->
+        <div class="w-full max-w-4xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-semibold tracking-wider text-slate-400 uppercase">クイックアクセス</h3>
+                <button id="add-shortcut-btn" class="flex items-center space-x-1 text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>追加</span>
+                </button>
+            </div>
+            <div id="shortcuts-container" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+                <!-- JSで動的に追加されます -->
+            </div>
+        </div>
+
+        <!-- 下部ユーティリティ（Todo & メモ） -->
+        <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <!-- TODOリスト -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="check-square" class="w-5 h-5 text-indigo-400"></i>
+                        <h4 class="font-bold text-slate-200">やることリスト</h4>
+                    </div>
+                    <span id="todo-count" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">0件</span>
+                </div>
+                <form id="todo-form" class="flex space-x-2 mb-3">
+                    <input type="text" id="todo-input" placeholder="新しいタスクを入力..." class="flex-grow bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500/50 text-slate-100">
+                    <button type="submit" class="bg-indigo-600/80 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-all">追加</button>
+                </form>
+                <ul id="todo-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    <!-- JSでタスクが追加されます -->
+                </ul>
+            </div>
+
+            <!-- クイックメモ -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md flex flex-col">
+                <div class="flex items-center space-x-2 mb-3">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-indigo-400"></i>
+                    <h4 class="font-bold text-slate-200">クイックメモ</h4>
+                </div>
+                <textarea id="quick-note" placeholder="ここに自由にメモを入力してください。自動的に保存されます..." class="w-full flex-grow h-32 bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500/50 text-slate-200 resize-none"></textarea>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="w-full max-w-7xl mx-auto px-6 py-6 text-center text-xs text-slate-500 z-10">
+        <p>© 2026 Startpage. LocalStorageにデータが安全に保存されています。</p>
+    </footer>
+
+    <!-- ダイアログ：ショートカット追加・編集モーダル -->
+    <div id="shortcut-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-100 mb-4">ショートカットを追加</h3>
+            <form id="shortcut-form" class="space-y-4">
+                <input type="hidden" id="edit-index" value="">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">名前</label>
+                    <input type="text" id="shortcut-name" placeholder="Google" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL</label>
+                    <input type="text" id="shortcut-url" placeholder="https://google.com" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 text-slate-100">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="delete-shortcut-btn" class="hidden mr-auto text-sm text-red-400 hover:text-red-300 px-3 py-2 transition-colors">削除</button>
+                    <button type="button" id="cancel-modal-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold transition-all">キャンセル</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 通知トーストメッセージ -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-slate-200 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
+        <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+        <span id="toast-message" class="text-xs font-medium">メッセージ</span>
+    </div>
+
+    <!-- JavaScript ロジック -->
+    <script>
+        // --- 状態管理 ---
+        let shortcuts = [];
+        let todos = [];
+        let currentTheme = 'dark';
+        let currentBgIndex = 0;
+        let selectedEngine = 'google';
+
+        // 検索エンジン設定
+        const searchEngines = {
+            google: { name: 'Google', url: 'https://www.google.com/search?q=' },
+            bing: { name: 'Bing', url: 'https://www.bing.com/search?q=' },
+            duckduckgo: { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
+            yahoo: { name: 'Yahoo!', url: 'https://search.yahoo.co.jp/search?p=' }
+        };
+
+        // 背景プリセットの定義
+        const backgroundGlows = [
+            { glow1: 'rgba(99, 102, 241, 0.1)', glow2: 'rgba(168, 85, 247, 0.1)' }, // Indigo & Purple (Default)
+            { glow1: 'rgba(239, 68, 68, 0.08)', glow2: 'rgba(245, 158, 11, 0.08)' }, // Red & Amber
+            { glow1: 'rgba(16, 185, 129, 0.08)', glow2: 'rgba(6, 182, 212, 0.08)' }, // Emerald & Cyan
+            { glow1: 'rgba(236, 72, 153, 0.08)', glow2: 'rgba(99, 102, 241, 0.08)' }, // Pink & Indigo
+            { glow1: 'rgba(0,0,0,0)', glow2: 'rgba(0,0,0,0)' } // 無地
+        ];
+
+        // デフォルトショートカット
+        const defaultShortcuts = [
+            { name: 'Google', url: 'https://www.google.com' },
+            { name: 'YouTube', url: 'https://www.youtube.com' },
+            { name: 'GitHub', url: 'https://github.com' },
+            { name: 'Gmail', url: 'https://mail.google.com' },
+            { name: 'Twitter', url: 'https://twitter.com' },
+            { name: 'Wikipedia', url: 'https://ja.wikipedia.org' },
+            { name: 'Yahoo!', url: 'https://www.yahoo.co.jp' }
+        ];
+
+        // --- DOM要素取得 ---
+        const clockEl = document.getElementById('clock');
+        const dateEl = document.getElementById('date');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const engineSelectBtn = document.getElementById('engine-select-btn');
+        const currentEngineName = document.getElementById('current-engine-name');
+        const engineDropdown = document.getElementById('engine-dropdown');
+        const shortcutsContainer = document.getElementById('shortcuts-container');
+        const addShortcutBtn = document.getElementById('add-shortcut-btn');
+        
+        // モーダル要素
+        const shortcutModal = document.getElementById('shortcut-modal');
+        const shortcutForm = document.getElementById('shortcut-form');
+        const shortcutNameInput = document.getElementById('shortcut-name');
+        const shortcutUrlInput = document.getElementById('shortcut-url');
+        const editIndexInput = document.getElementById('edit-index');
+        const modalTitle = document.getElementById('modal-title');
+        const deleteShortcutBtn = document.getElementById('delete-shortcut-btn');
+        const cancelModalBtn = document.getElementById('cancel-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // Todo要素
+        const todoForm = document.getElementById('todo-form');
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
+        const todoCount = document.getElementById('todo-count');
+
+        // メモ・背景・テーマ・通知
+        const quickNote = document.getElementById('quick-note');
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const bgToggle = document.getElementById('bg-toggle');
+        const settingsBtn = document.getElementById('settings-btn');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        // --- 初期化処理 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // ローカルストレージからデータ復元
+            loadSettings();
+            
+            // 時計開始
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Lucideアイコンレンダリング
+            lucide.createIcons();
+
+            // リスナー登録
+            setupEventListeners();
+        });
+
+        // --- 設定ロード ---
+        function loadSettings() {
+            // テーマ復元
+            currentTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(currentTheme);
+
+            // 背景復元
+            currentBgIndex = parseInt(localStorage.getItem('bg-index')) || 0;
+            applyBackground(currentBgIndex);
+
+            // 検索エンジン復元
+            selectedEngine = localStorage.getItem('search-engine') || 'google';
+            setSearchEngine(selectedEngine);
+
+            // ショートカット復元
+            const savedShortcuts = localStorage.getItem('shortcuts');
+            if (savedShortcuts) {
+                shortcuts = JSON.parse(savedShortcuts);
+            } else {
+                shortcuts = [...defaultShortcuts];
+                localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+            }
+            renderShortcuts();
+
+            // Todo復元
+            const savedTodos = localStorage.getItem('todos');
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+            }
+            renderTodos();
+
+            // メモ復元
+            const savedNote = localStorage.getItem('quick-note');
+            if (savedNote) {
+                quickNote.value = savedNote;
+            }
+        }
+
+        // --- イベントリスナー設定 ---
+        function setupEventListeners() {
+            // 検索
+            searchForm.addEventListener('submit', handleSearch);
+            engineSelectBtn.addEventListener('click', () => {
+                engineDropdown.classList.toggle('hidden');
+            });
+
+            // ドロップダウンの外をクリックしたら閉じる
+            document.addEventListener('click', (e) => {
+                if (!engineSelectBtn.contains(e.target) && !engineDropdown.contains(e.target)) {
+                    engineDropdown.classList.add('hidden');
+                }
+            });
+
+            // ショートカット追加
+            addShortcutBtn.addEventListener('click', () => openShortcutModal());
+            closeModalBtn.addEventListener('click', closeShortcutModal);
+            cancelModalBtn.addEventListener('click', closeShortcutModal);
+            shortcutForm.addEventListener('submit', handleShortcutSubmit);
+            deleteShortcutBtn.addEventListener('click', handleDeleteShortcut);
+
+            // Todo追加
+            todoForm.addEventListener('submit', handleTodoSubmit);
+
+            // メモ保存
+            quickNote.addEventListener('input', () => {
+                localStorage.setItem('quick-note', quickNote.value);
+            });
+
+            // テーマ切り替え
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // 背景切り替え
+            bgToggle.addEventListener('click', toggleBackground);
+
+            // 設定デモ
+            settingsBtn.addEventListener('click', () => {
+                showToast("クイック設定: 右上のアイコンからテーマやグラデーション背景を変更できます。");
+            });
+        }
+
+        // --- 時計 & 日付の表示更新 ---
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            const day = dayNames[now.getDay()];
+
+            dateEl.textContent = `${year}年${month}月${date}日 (${day})`;
+        }
+
+        // --- 検索の処理 ---
+        function handleSearch(e) {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            // URLかどうかを判定
+            const isUrl = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(query);
+            
+     
